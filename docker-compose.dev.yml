@@ -1,0 +1,17 @@
+services:
+
+  db:
+    image: postgres:14.2-alpine
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: core-supply
+      POSTGRES_USER: core-supply
+      POSTGRES_PASSWORD: core-supply
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+
+volumes:
+  postgresql-data:
+    driver: local

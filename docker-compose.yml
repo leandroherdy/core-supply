@@ -1,0 +1,28 @@
+services:
+
+  db:
+    image: postgres:14.2-alpine
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: core-supply
+      POSTGRES_USER: core-supply
+      POSTGRES_PASSWORD: core-supply
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - '8000:8000'
+    depends_on:
+      - db
+    environment:
+      CORE_SUPPLY_SETTING_DATABASES: '{"default":{"HOST":"db"}}'
+      CORE_SUPPLY_SETTING_LOCAL_SETTINGS_PATH: 'core/project/settings.py'
+
+volumes:
+  postgresql-data:
+    driver: local

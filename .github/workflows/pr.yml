@@ -1,0 +1,53 @@
+name: Quality Assurance
+on: [pull_request]
+
+jobs:
+  quality-assurance:
+    name: Quality Assurance
+    runs-on: ubuntu-latest
+    container: python:3.12
+
+    services:
+      db:
+        image: postgres:14.2-alpine
+        env:
+          POSTGRES_DB: core-supply
+          POSTGRES_USER: core-supply
+          POSTGRES_PASSWORD: core-supply
+        ports:
+          - 5432:5432
+
+        options: >-
+          --health-cmd="pg_isready -U core-supply"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set safe directory for Git
+        run: git config --global --add safe.directory /__w/core-supply/core-supply
+
+      - name: Install Poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: 1.8.4
+
+      - name: Install Dependencies
+        run: make install
+        working-directory: .
+
+      - name: Lint
+        run: make lint
+        working-directory: .
+
+      - name: Test
+        run: make test
+        env:
+          CORE_SUPLLY_SETTING_DATABASES: '{"default":{"HOST":"db"}}'
+          CORE_SUPLLY_SETTING_LOCAL_SETTINGS_PATH: './core/project/settings.py'
+        working-directory: .

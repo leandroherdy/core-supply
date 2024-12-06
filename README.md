@@ -1,4 +1,4 @@
-# Juntos Somos+
+# Code Challenge Juntos Somos+
 
 ## Descrição
 
@@ -103,33 +103,39 @@ maxlat: -46.603598
 2. Nacionalidade Padrão: O campo `nationality` é inserido automaticamente com o valor padrão `BR`, já que todos os clientes cadastrados são do Brasil.
 3. Gênero: O campo `gender` deve ser alterado para o formato `M` ou `F`, conforme necessário.
 4. Remoção de Idade: O campo `age` de `dob` e `registered` é removido.
-5. Estrutura Simplificada: A estrutura dos dados é reorganizada para melhorar a legibilidade, utilizando arrays para telephoneNumbers e mobileNumbers, por exemplo.
+5. Estrutura Simplificada: A estrutura dos dados é reorganizada para melhorar a legibilidade, utilizando arrays para telephoneNumbers e mobileNumbers.
 
 ## Endpoints
 ### 1. Carregar Dados de Clientes
   * **Método:** GET
-  * **URL:** /load-data/
+  * **URL:** /api/v1/clients/
+  * **Descrição:** Este endpoint retorna os dados de clientes pré-carregados na memória ou permite filtrar os dados usando parâmetros específicos. Suporta paginação para gerenciar grandes conjuntos de dados. 
+  * **Parâmetros de Query (Opcional):**
+```
+| Nome       | Tipo     | Descrição                                                                                                               |
+|------------|----------|-------------------------------------------------------------------------------------------------------------------------|
+| type       | string   | Filtra os clientes pelo tipo (ex.: `laborious`, `normal`, `special`). Permite múltiplos valores separados por vírgulas. |
+| region     | string   | Filtra os clientes pela região (ex.: `norte`, `sul`). Permite múltiplos valores separados por vírgulas.                 |
+| page       | integer  | Número da página para paginação. Valor padrão: `1`.                                                                     |
+| page_size  | integer  | Tamanho da página para paginação. Valor padrão: `10`.                                                                   |
 
-### Descrição
-Este endpoint é utilizado para carregar os dados de entrada a partir dos arquivos **CSV** e **JSON** disponibilizados via URL.
+``` 
+- **Respostas:**
+  - 200 OK: Retorna os dados paginados de clientes.
+  - 400 Bad Request: Parâmetros inválidos fornecidos.
+  - 404 Not Found: Nenhum dado encontrado para os filtros aplicados.
+  - 401 Unauthorized: Credenciais de autenticação não fornecidas ou inválidas.
 
-* #### Parâmetros de URL:
-  * URL para o arquivo CSV contendo os dados dos clientes.
-  * URL para o arquivo JSON contendo os dados dos clientes.
 
-### Autenticação
+
+## Autenticação
 Este endpoint requer autenticação via **Token**. O token deve ser enviado no cabeçalho da requisição.
 
 ### Exemplo de Requisição
 ```
-curl -X GET "http://127.0.0.1:8000/load-data/" \
-  -H "Authorization: Bearer <seu_access_token_aqui>"
+GET /api/v1/clients/?type=laborious,normal&region=norte,sul&page=1&page_size=10 HTTP/1.1Authorization: Token <seu_token_aqui>
 ```
-* #### Resposta:
-
-  * **Código de Status:** 200 OK
-
-  * **Corpo da resposta:** Lista paginada de usuários, contendo metadados de paginação.
+  * **Exemplo de Resposta Sucesso (200):**
 
 ```
 {
@@ -183,13 +189,46 @@ curl -X GET "http://127.0.0.1:8000/load-data/" \
 }
 ```
 
-  * **Código de Status:** 401 Unauthorized (se o token for inválido ou não fornecido)
+- **Código de Status:** 401 Unauthorized (se o token for inválido ou não fornecido)
 
 ```
 {
   "detail": "Authentication credentials were not provided."
 }
 ```
+- **Exemplo de Resposta Nenhum Dado Encontrado (404):**
+```
+{
+  "error": "No data found matching the filters."
+}
+```
+- **Exemplo de Resposta Parâmetros Inválidos (400):**
+```
+{
+  "error": "Invalid filter parameter(s): invalid_param"
+}
+```
+## **📄 API Documentação**
+
+Esta API é documentada automaticamente, oferecendo uma visão clara dos endpoints, parâmetros e respostas disponíveis.
+
+- **Endpoints de Documentação**
+```
+| **Rota**              | **Descrição**                                                                                |
+|-----------------------|----------------------------------------------------------------------------------------------|
+| `/api/schema/`        | Retorna o schema OpenAPI no formato JSON. Ideal para uso em ferramentas como Postman.        |
+| `/api/docs/swagger/`  | Interface interativa Swagger para explorar e testar a API em tempo real.                     |
+| `/api/docs/redoc/`    | Interface Redoc, uma documentação mais amigável para leitura e consulta.                     |
+```
+
+**Como acessar**
+
+1. **Schema OpenAPI:**
+  - Visite o endpoint /api/schema/ para baixar ou usar o schema OpenAPI em ferramentas de integração.
+2. **Swagger UI:**
+  - Acesse /api/docs/swagger/ para explorar e testar os endpoints diretamente pelo navegador.
+3. **ReDoc:**
+  - Visite /api/docs/redoc/ para uma documentação estática e bem organizada da API.
 
 ## Execução
 
@@ -213,11 +252,13 @@ make install
 make up-dependencies-only
 ```
 4. Inicie o servidor:
-
 ```
 make run-server
 ```
-
+5. Fazer as migrações
+```
+make migrate
+```
 ## Testes
 1. Execute os testes com o comando:
 ```
@@ -229,3 +270,7 @@ make test-sh
 ```
 
 ## Considerações Finais
+
+Esta API foi desenvolvida para atender à necessidade de processamento e consulta de dados de clientes de forma eficiente e organizada. Com suporte para múltiplos formatos de entrada e funcionalidades como filtros e paginação, a API é uma solução robusta para gerenciar grandes volumes de dados.
+
+Se houver dúvidas ou melhorias a serem sugeridas, sinta-se à vontade para contribuir no repositório ou entrar em contato com os mantenedores do projeto.

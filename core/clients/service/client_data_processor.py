@@ -1,35 +1,60 @@
-from core.clients.service.csv_loader import CSVLoader
-from core.clients.service.json_loader import JSONLoader
-from core.clients.service.phone_formatter import PhoneFormatter
-from core.clients.service.region_mapper import RegionMapper
-
-from .type_classifier import TypeClassifier
+from core.clients.data_transformers.phone_formatter import PhoneFormatter
+from core.clients.data_transformers.region_mapper import RegionMapper
+from core.clients.data_transformers.type_classifier import TypeClassifier
+from core.clients.loaders.csv_loader import CSVLoader
+from core.clients.loaders.json_loader import JSONLoader
 
 
 class DataProcessor:
     """ Data processor for normalising and applying business rules. """
 
-    def process_data(self, url):
-        """
-        Loads and processes data based on the URL provided.
-        :param url: URL of the file (CSV or JSON).
-        :return: List of users processed.
-        """
-        if url.endswith('.json'):
-            loader = JSONLoader()
-            formato = 'json'
-        elif url.endswith('.csv'):
-            loader = CSVLoader()
-            formato = 'csv'
-        else:
-            raise ValueError('File format not supported. Use JSON or CSV.')
+    def __init__(self):
+        self.data_in_memory = []
 
-        data = loader.load_data(url)
-        if data is None:
-            raise ValueError(f'Error loading URL data: {url}')
+    def process_data(self, *urls):
+        """
+        Loads and processes data based on the provided URLs.
+        Combines formatted data from JSON and CSV files into a single list.
 
-        processors = {'json': self.process_json_data, 'csv': self.process_csv_data}
-        return processors[formato](data)
+        :param urls: URLs of the files (CSV or JSON).
+        :return: List of processed data.
+        """
+        all_processed_data = []
+
+        for url in urls:
+            try:
+                if url.endswith('.json'):
+                    loader = JSONLoader()
+                    formato = 'json'
+                elif url.endswith('.csv'):
+                    loader = CSVLoader()
+                    formato = 'csv'
+                else:
+                    raise ValueError(f'File format not supported for URL: {url}')
+
+                data = loader.load_data(url)
+                if data is None:
+                    raise ValueError(f'Failed to load data from URL: {url}')
+
+                processors = {'json': self.process_json_data, 'csv': self.process_csv_data}
+                processed_data = processors[formato](data)
+
+                all_processed_data.extend(processed_data)
+
+                print(f"Successfully processed {len(processed_data)} records from {url}")
+
+            except Exception as e:
+                print(f"Error processing URL {url}: {e}")
+
+        self.data_in_memory.extend(all_processed_data)
+        return all_processed_data
+
+    def get_data(self):
+        """
+        Returns the data currently stored in memory.
+        :return: List of processed data.
+        """
+        return self.data_in_memory
 
     def process_json_data(self, data):
         """

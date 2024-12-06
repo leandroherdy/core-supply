@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = 'django-insecure-nz=2d2d#6-2^qz84laq=dc@8e+b@9+3&*s&gp(m(g8s%5yah=v'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     # Third party
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
     # Apps
     'core.clients.apps.ClientsConfig',
 ]
@@ -131,9 +133,37 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.TokenAuthentication',),
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated',),
-    'DEFAULT_PAGINATION_CLASS': 'core.pagination.custom_pagination.CustomPagination',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_THROTTLE_CLASSES': ('rest_framework.throttling.UserRateThrottle',),
     'DEFAULT_THROTTLE_RATES': {
         'user': '10/minute'
     },
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Core Supply API',
+    'DESCRIPTION':
+        "Core Supply API provides robust endpoints for managing and processing client "
+        "data. Includes advanced filtering, pagination, and region-specific data "
+        "insights, designed to streamline data operations and facilitate business "
+        "decisions. Ideal for integrating new leads and optimizing client management "
+        "workflows.",
+    'VERSION': '1.0.0',
+    'TOS': "https://core-supply.com/terms/",
+    'CONTACT': {
+        'name': "Team Leandro Herdy",
+        'email': "le.herdy@gmail.com",
+        'url': "https://core-supply.com/support",
+    },
+    'LICENSE': {
+        'name': "MIT License",
+        'url': "https://opensource.org/licenses/MIT",
+    },
+    'SERVE_INCLUDE_SCHEMA': False,
+    'IGNORE_WARNINGS': True,
+    'SCHEMA_PATH_PREFIX': '/api/v1',
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.IsAuthenticated'],
+    'SORT_OPERATION_PARAMETERS': True,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'PAGINATION_WHITELIST': ['core.pagination.custom_pagination.CustomPagination'],
 }
